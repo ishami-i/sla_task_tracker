@@ -59,7 +59,8 @@ class DatabaseHelper {
       )
     ''');
   }
-    Future<List<User>> getUsers() async {
+
+  Future<List<User>> getUsers() async {
     final db = await database;
 
     final result = await db.query(
@@ -68,5 +69,21 @@ class DatabaseHelper {
     );
 
     return result.map((json) => User.fromMap(json)).toList();
+  }
+
+  Future<int> insertTask(Task task) async {
+    final db = await database;
+    return await db.insert('tasks', task.toMap());
+  }
+
+  Future<List<Task>> getTasks() async {
+    final db = await database;
+
+    final result = await db.query(
+      'tasks',
+      orderBy: 'id DESC',
+    );
+
+    return result.map((json) => Task.fromMap(json)).toList();
   }
 }
