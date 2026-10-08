@@ -1,7 +1,7 @@
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/user.dart';
-import '../models/ task.dart';
+import '../models/task.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._internal();
@@ -58,5 +58,15 @@ class DatabaseHelper {
         FOREIGN KEY (assigned_to) REFERENCES users (id) ON DELETE SET NULL
       )
     ''');
+  }
+    Future<List<User>> getUsers() async {
+    final db = await database;
+
+    final result = await db.query(
+      'users',
+      orderBy: 'name ASC',
+    );
+
+    return result.map((json) => User.fromMap(json)).toList();
   }
 }
