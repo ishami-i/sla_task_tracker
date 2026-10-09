@@ -86,4 +86,33 @@ class DatabaseHelper {
 
     return result.map((json) => Task.fromMap(json)).toList();
   }
+
+  Future<User?> getUserById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'users',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return result.isEmpty ? null : User.fromMap(result.first);
+  }
+
+  Future<int> insertUser(User user) async {
+    final db = await database;
+    return await db.insert('users', user.toMap());
+  }
+
+  Future<int> updateUser(User user) async {
+    if (user.id == null) {
+      throw ArgumentError('Cannot update a user without an id');
+    }
+    final db = await database;
+    return await db.update(
+      'users',
+      user.toMap(),
+      where: 'id = ?',
+      whereArgs: [user.id],
+    );
+  }
 }
