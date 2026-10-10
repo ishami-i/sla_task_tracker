@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import '../models/task.dart';
 import '../services/database_helper.dart';
+import '../services/user_session.dart';
+import 'profile_page.dart';
 import 'signIn_page.dart';
 import 'taskList_page.dart';
+import 'taskStatistic_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required this.userName});
@@ -87,7 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
         onRefresh: _loadTasks,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+          padding: const EdgeInsets.fromLTRB(20,24, 20, 28),
           children: [
             Text(
               'Good morning,',
@@ -105,9 +108,9 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Here's what's happening with your project.",
+              "Here's what's happening with yourproject.",
               style: TextStyle(
-                color: appText.withValues(alpha: 0.65),
+                color: appText.withValues(alpha:0.65),
                 fontSize: 16,
               ),
             ),
@@ -130,20 +133,17 @@ class _DashboardPageState extends State<DashboardPage> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
-          if (index == 0) {
-            return;
-          } else if (index == 1) {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => TaskListPage(userName: widget.userName),
-              ),
-            );
-          } else if (index != 0) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('This section is being built by the team.')),
-            );
+          switch (index) {
+            case 0:
+              setState(() => _selectedIndex = 0);
+            case 1:
+              _openTasks();
+            case 2:
+              _showComingSoon('Team');
+            case 3:
+              _openStatistics();
+            case 4:
+              _openProfile();
           }
         },
         destinations: const [
@@ -154,7 +154,9 @@ class _DashboardPageState extends State<DashboardPage> {
           NavigationDestination(
               icon: Icon(Icons.check_box_outlined), label: 'Tasks'),
           NavigationDestination(
-              icon: Icon(Icons.groups_outlined), label: 'Team'),
+              icon: Icon(Icons.groups_outlined),label: 'Team'),
+          NavigationDestination(
+              icon: Icon(Icons.bar_chart_outlined), label: 'Stats'),
           NavigationDestination(
               icon: Icon(Icons.person_outline), label: 'Profile'),
         ],
@@ -220,11 +222,19 @@ class _DashboardPageState extends State<DashboardPage> {
               },
             ),
             ListTile(
+              leading: const Icon(Icons.bar_chart_outlined),
+              title: const Text('Statistics'),
+              onTap: () {
+                Navigator.of(context).pop();
+                _openStatistics();
+              },
+            ),
+            ListTile(
               leading: const Icon(Icons.person_outline),
               title: const Text('Profile'),
               onTap: () {
                 Navigator.of(context).pop();
-                _showComingSoon('Profile');
+                _openProfile();
               },
             ),
             const Spacer(),
@@ -246,7 +256,25 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  void _signOut() {
+  Future<void> _openStatistics() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const TaskStatisticPage()),
+    );
+    if (mounted) _loadTasks();
+  }
+
+  Future<void> _openProfile() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ProfilePage(userName: widget.userName),
+      ),
+    );
+    if (mounted) _loadTasks();
+  }
+
+  Future<void> _signOut() async {
+    await UserSession.clear();
+    if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const SignInPage()),
       (route) => false,

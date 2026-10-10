@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import 'profile_page.dart';
+import 'taskStatistic_page.dart';
 
 class TaskListPage extends StatelessWidget {
   const TaskListPage({super.key, required this.userName});
@@ -72,15 +74,27 @@ class TaskListPage extends StatelessWidget {
       bottomNavigationBar: NavigationBar(
         selectedIndex: 1,
         onDestinationSelected: (index) {
-          if (index == 0) {
-            Navigator.of(context).pop();
-          } else if (index == 3) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content:
-                    Text('The profile section is being built by the team.'),
-              ),
-            );
+          switch (index) {
+            case 0:
+              Navigator.of(context).pop();
+            case 2:
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('The team section is being built by the team.'),
+                ),
+              );
+            case 3:
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TaskStatisticPage(),
+                ),
+              );
+            case 4:
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => ProfilePage(userName: userName),
+                ),
+              );
           }
         },
         destinations: const [
@@ -99,7 +113,13 @@ class TaskListPage extends StatelessWidget {
             label: 'Team',
           ),
           NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: 'Stats',
+          ),
+          NavigationDestination(
             icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
             label: 'Profile',
           ),
         ],
