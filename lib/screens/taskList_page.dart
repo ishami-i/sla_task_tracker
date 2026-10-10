@@ -3,6 +3,9 @@ import '../models/task.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../widgets/sla_chip.dart';
+import 'profile_page.dart';
+import 'taskStatistic_page.dart';
+import 'teamMember_page.dart';
 
 class _TaskData {
   final List<Task> tasks;
@@ -11,7 +14,9 @@ class _TaskData {
 }
 
 class TaskListPage extends StatefulWidget {
-  const TaskListPage({super.key});
+  const TaskListPage({super.key, required this.userName});
+
+  final String userName;
 
   @override
   State<TaskListPage> createState() => _TaskListPageState();
@@ -102,7 +107,13 @@ class _TaskListPageState extends State<TaskListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Tasks'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text(
+          'Tasks',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        centerTitle: true,
+      ),
       body: Column(
         children: [
           Padding(
@@ -184,6 +195,59 @@ class _TaskListPageState extends State<TaskListPage> {
           // setState(() => _future = _load());
         },
         child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: 1,
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              Navigator.of(context).pop();
+            case 2:
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TeamMemberPage(),
+                ),
+              );
+            case 3:
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TaskStatisticPage(),
+                ),
+              );
+            case 4:
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => ProfilePage(userName: widget.userName),
+                ),
+              );
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.check_box_outlined),
+            selectedIcon: Icon(Icons.check_box),
+            label: 'Tasks',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.groups_outlined),
+            label: 'Team',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart_outlined),
+            selectedIcon: Icon(Icons.bar_chart),
+            label: 'Stats',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

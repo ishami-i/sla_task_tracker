@@ -209,7 +209,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
                   );
                 } else {
                   return DropdownButtonFormField<int>(
-                    value: _selectedUserId,
+                    initialValue: _selectedUserId,
                     decoration: const InputDecoration(
                       labelText: 'Assigned To',
                       hintText: 'Select User',
@@ -253,7 +253,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Priority Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedPriority,
+              initialValue: _selectedPriority,
               decoration: const InputDecoration(
                 labelText: 'Priority',
                 hintText: 'Select Priority',
@@ -278,7 +278,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Status Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedStatus,
+              initialValue: _selectedStatus,
               decoration: const InputDecoration(
                 labelText: 'Status',
                 hintText: 'Select Status',

@@ -15,4 +15,10 @@ class AppColors {
 
   // accent: rgb(68, 61, 255)
   static const Color accent = Color.fromRGBO(68, 61, 255, 1.0);
+
+  static const Color muted = Color.fromRGBO(87, 86, 107, 1.0);
+  static const Color border = Color.fromRGBO(230, 229, 242, 1.0);
+  static const Color divider = Color.fromRGBO(239, 238, 246, 1.0);
+  static const Color danger = Color.fromRGBO(163, 38, 27, 1.0);
+
 }

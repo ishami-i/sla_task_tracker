@@ -48,7 +48,7 @@ class AppTheme {
         filled: true,
         fillColor: Colors.white,
         labelStyle: const TextStyle(color: AppColors.text),
-        hintStyle: TextStyle(color: AppColors.text.withOpacity(0.6)),
+        hintStyle: TextStyle(color: AppColors.text.withValues(alpha: 0.6)),
         prefixIconColor: AppColors.primary,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8.0),
