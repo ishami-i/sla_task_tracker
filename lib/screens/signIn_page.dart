@@ -61,7 +61,7 @@ class _SignInPageState extends State<SignInPage> {
                     Container(
                       height: 150,
                       decoration: BoxDecoration(
-                        color: appSecondary.withValues(alpha: 0.65),
+                        color: appSecondary.withOpacity(0.65),
                         borderRadius: BorderRadius.circular(32),
                       ),
                       child: const Icon(
@@ -86,7 +86,7 @@ class _SignInPageState extends State<SignInPage> {
                       'Plan. Track. Deliver Together.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: appText.withValues(alpha: 0.62),
+                        color: appText.withOpacity(0.62),
                         fontSize: 16,
                       ),
                     ),
@@ -163,7 +163,7 @@ class _SignInPageState extends State<SignInPage> {
                         Text(
                           "Don't have an account? ",
                           style:
-                              TextStyle(color: appText.withValues(alpha: 0.65)),
+                              TextStyle(color: appText.withOpacity(0.65)),
                         ),
                         TextButton(
                           onPressed: () => ScaffoldMessenger.of(context)

@@ -15,7 +15,14 @@ class ProfileValidator {
   }
 
   static String? validateRole(String? value) {
-    if (value == null || value.trim().isEmpty) return 'Please choose a role';
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return 'Role is required';
+    if (text.length < 2) return 'Role must be at least 2 characters';
+    if (text.length > 40) return 'Role must be 40 characters or fewer';
+    if (!_allowedNameChars.hasMatch(text)) {
+      return 'Use letters, spaces, hyphens or apostrophes only';
+    }
+    if (!_hasLetter.hasMatch(text)) return 'Role must contain letters';
     return null;
   }
 

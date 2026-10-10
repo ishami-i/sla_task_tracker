@@ -5,7 +5,9 @@ import '../services/database_helper.dart';
 import '../utils/create_validator.dart';
 
 class CreateTaskForm extends StatefulWidget {
-  const CreateTaskForm({super.key});
+  final Task? task;
+
+  const CreateTaskForm({super.key, this.task});
 
   @override
   State<CreateTaskForm> createState() => _CreateTaskFormState();
@@ -36,6 +38,19 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
   void initState() {
     super.initState();
     _usersFuture = DatabaseHelper.instance.getUsers();
+
+    if (widget.task != null) {
+      _titleController.text = widget.task!.title;
+      _descriptionController.text = widget.task!.description ?? '';
+      _deadlineController.text = widget.task!.deadline;
+      _selectedUserId = widget.task!.assignedTo;
+      _selectedPriority = widget.task!.priority;
+      _selectedStatus = widget.task!.status;
+
+      try {
+        _selectedDeadlineDate = DateTime.parse(widget.task!.deadline);
+      } catch (_) {}
+    }
   }
 
   @override
@@ -90,7 +105,8 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
     try {
       final slaStatus = _calculateSlaStatus(_selectedDeadlineDate);
 
-      final newTask = Task(
+      final taskToSave = Task(
+        id: widget.task?.id,
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim().isEmpty
             ? null
@@ -102,13 +118,19 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
         slaStatus: slaStatus,
       );
 
-      await DatabaseHelper.instance.insertTask(newTask);
+      if (widget.task != null) {
+        await DatabaseHelper.instance.updateTask(taskToSave);
+      } else {
+        await DatabaseHelper.instance.insertTask(taskToSave);
+      }
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Task created successfully!'),
+        SnackBar(
+          content: Text(widget.task != null
+              ? 'Task updated successfully!'
+              : 'Task created successfully!'),
           backgroundColor: Colors.green,
         ),
       );
@@ -131,7 +153,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to create task: $e'),
+          content: Text('Failed to save task: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -146,9 +168,11 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.task != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Task'),
+        title: Text(isEditing ? 'Edit Task' : 'Create Task'),
         elevation: 0,
       ),
       body: Form(
@@ -209,7 +233,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
                   );
                 } else {
                   return DropdownButtonFormField<int>(
-                    initialValue: _selectedUserId,
+                    value: _selectedUserId,
                     decoration: const InputDecoration(
                       labelText: 'Assigned To',
                       hintText: 'Select User',
@@ -253,7 +277,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Priority Dropdown
             DropdownButtonFormField<String>(
-              initialValue: _selectedPriority,
+              value: _selectedPriority,
               decoration: const InputDecoration(
                 labelText: 'Priority',
                 hintText: 'Select Priority',
@@ -278,7 +302,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Status Dropdown
             DropdownButtonFormField<String>(
-              initialValue: _selectedStatus,
+              value: _selectedStatus,
               decoration: const InputDecoration(
                 labelText: 'Status',
                 hintText: 'Select Status',
@@ -301,7 +325,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             const SizedBox(height: 24.0),
 
-            // Submit Button
+            // Submit / Update Button
             SizedBox(
               height: 48.0,
               child: ElevatedButton(
@@ -317,9 +341,9 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
                         width: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text(
-                        'Submit Task',
-                        style: TextStyle(fontSize: 16.0),
+                    : Text(
+                        isEditing ? 'Update Task' : 'Submit Task',
+                        style: const TextStyle(fontSize: 16.0),
                       ),
               ),
             ),

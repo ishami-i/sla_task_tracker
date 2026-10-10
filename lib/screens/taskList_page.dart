@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import '../logic/sla_calculator.dart';
+import '../models/sla_status.dart';
 import '../models/task.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../widgets/sla_chip.dart';
+import 'create_page.dart';
 import 'profile_page.dart';
+import 'taskDetail_page.dart';
 import 'taskStatistic_page.dart';
 import 'teamMember_page.dart';
 
@@ -51,13 +55,7 @@ class _TaskListPageState extends State<TaskListPage> {
 
   bool _isDone(Task t) => t.status.toLowerCase().contains('complet');
 
-  SlaStatus _sla(Task t) {
-    final due = _due(t);
-    if (due == null) {
-      return _isDone(t) ? SlaStatus.completed : SlaStatus.onTrack;
-    }
-    return slaFor(due, _isDone(t));
-  }
+  SlaStatus _sla(Task t) => calculateSlaStatus(t, now: DateTime.now());
 
   String _fmt(Task t) {
     final d = _due(t);
@@ -155,7 +153,9 @@ class _TaskListPageState extends State<TaskListPage> {
                 if (tasks.isEmpty) return const Center(child: Text('No tasks found'));
                 return RefreshIndicator(
                   onRefresh: () async {
-                    setState(() => _future = _load());
+                    setState(() {
+  _future = _load();
+});
                     await _future;
                   },
                   child: ListView.builder(
@@ -167,8 +167,17 @@ class _TaskListPageState extends State<TaskListPage> {
                       return Card(
                         margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
-                          onTap: () {
-                            // TODO: navigate to taskDetail_page
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => TaskDetailPage(task: t),
+                              ),
+                            );
+                            if (mounted) {
+                              setState(() {
+  _future = _load();
+});
+                            }
                           },
                           leading: CircleAvatar(
                             child: Text(assignee == null ? '?' : _initials(assignee.name)),
@@ -190,64 +199,19 @@ class _TaskListPageState extends State<TaskListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: navigate to create_page, then reload:
-          // setState(() => _future = _load());
-        },
-        child: const Icon(Icons.add),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: 1,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              Navigator.of(context).pop();
-            case 2:
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const TeamMemberPage(),
-                ),
-              );
-            case 3:
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => const TaskStatisticPage(),
-                ),
-              );
-            case 4:
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ProfilePage(userName: widget.userName),
-                ),
-              );
+        onPressed: () async {
+          await Navigator.of(context).push(
+            MaterialPageRoute<bool>(
+              builder: (_) => const CreateTaskPage(),
+            ),
+          );
+          if (mounted) {
+            setState(() {
+              _future = _load();
+            });
           }
         },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.check_box_outlined),
-            selectedIcon: Icon(Icons.check_box),
-            label: 'Tasks',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.groups_outlined),
-            label: 'Team',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.bar_chart_outlined),
-            selectedIcon: Icon(Icons.bar_chart),
-            label: 'Stats',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        child: const Icon(Icons.add),
       ),
     );
   }

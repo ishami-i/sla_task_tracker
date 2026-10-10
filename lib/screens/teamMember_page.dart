@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../services/user_queries.dart';
+import '../utils/profile_validator.dart';
 
 class TeamMemberPage extends StatefulWidget {
   const TeamMemberPage({super.key});
@@ -24,7 +25,9 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
   }
 
   void _reload() =>
-      setState(() => _future = DatabaseHelper.instance.getUsers());
+      setState(() {
+        _future = DatabaseHelper.instance.getUsers();
+      });
 
   String _initials(String name) {
     final p = name.trim().split(RegExp(r'\s+'));
@@ -45,18 +48,18 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
         title: Text(existing == null ? 'Add Member' : 'Edit Member'),
         content: Form(
           key: formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             TextFormField(
               controller: nameCtrl,
               decoration: const InputDecoration(labelText: 'Full name'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Name is required' : null,
+              validator: ProfileValidator.validateName,
             ),
+            const SizedBox(height: 12),
             TextFormField(
               controller: roleCtrl,
               decoration: const InputDecoration(labelText: 'Role'),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Role is required' : null,
+              validator: ProfileValidator.validateRole,
             ),
           ]),
         ),
