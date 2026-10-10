@@ -15,8 +15,13 @@ class UserSession {
 
   static Future<void> clear() => _prefs.remove(_kCurrentUserId);
 
-  static Future<User> loadCurrentUser() async {
+  static Future<User> loadCurrentUser({String? preferredName}) async {
     final db = DatabaseHelper.instance;
+
+    final name = preferredName?.trim() ?? '';
+    if (name.isNotEmpty) {
+      return _findOrCreateByName(name);
+    }
 
     final id = await getCurrentUserId();
     if (id != null) {
@@ -30,9 +35,26 @@ class UserSession {
       return users.first;
     }
 
-    final fallback = User(name: 'Aline Uwase', role: 'Project Lead');
-    final newId = await db.insertUser(fallback);
+    return _findOrCreateByName('Aline Uwase', role: 'Project Lead');
+  }
+
+  static Future<User> _findOrCreateByName(
+    String name, {
+    String role = 'Project team member',
+  }) async {
+    final db = DatabaseHelper.instance;
+
+    final users = await db.getUsers();
+    for (final user in users) {
+      if (user.name.toLowerCase() == name.toLowerCase()) {
+        await setCurrentUserId(user.id!);
+        return user;
+      }
+    }
+
+    final displayName = name[0].toUpperCase() + name.substring(1);
+    final newId = await db.insertUser(User(name: displayName, role: role));
     await setCurrentUserId(newId);
-    return User(id: newId, name: fallback.name, role: fallback.role);
+    return User(id: newId, name: displayName, role: role);
   }
 }

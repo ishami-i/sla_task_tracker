@@ -14,7 +14,9 @@ import 'editProfile_page.dart';
 class ProfilePage extends StatefulWidget {
   static const routeName = '/profile';
 
-  const ProfilePage({super.key});
+  final String? userName;
+
+  const ProfilePage({super.key, this.userName});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -33,7 +35,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _load() async {
     try {
-      final user = await UserSession.loadCurrentUser();
+      final user = await UserSession.loadCurrentUser(
+        preferredName: widget.userName,
+      );
       if (!mounted) return;
       setState(() {
         _user = user;
@@ -101,7 +105,7 @@ class _ProfilePageState extends State<ProfilePage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Sign out?'),
-        content: const Text('You will go back to the user selection screen.'),
+        content: const Text('You will go back to the sign in screen.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -119,7 +123,12 @@ class _ProfilePageState extends State<ProfilePage> {
     if (!mounted || confirmed != true) return;
     await UserSession.clear();
     if (!mounted) return;
-    _showSnack('Signed out');
+
+    final messenger = ScaffoldMessenger.of(context);
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(const SnackBar(content: Text('Signed out')));
   }
 
   Widget _buildContent(User user) {
