@@ -90,7 +90,7 @@ class _DashboardPageState extends State<DashboardPage> {
         onRefresh: _loadTasks,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20,24, 20, 28),
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
           children: [
             Text(
               'Good morning,',
@@ -110,7 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               "Here's what's happening with yourproject.",
               style: TextStyle(
-                color: appText.withValues(alpha:0.65),
+                color: appText.withValues(alpha: 0.65),
                 fontSize: 16,
               ),
             ),
@@ -154,7 +154,7 @@ class _DashboardPageState extends State<DashboardPage> {
           NavigationDestination(
               icon: Icon(Icons.check_box_outlined), label: 'Tasks'),
           NavigationDestination(
-              icon: Icon(Icons.groups_outlined),label: 'Team'),
+              icon: Icon(Icons.groups_outlined), label: 'Team'),
           NavigationDestination(
               icon: Icon(Icons.bar_chart_outlined), label: 'Stats'),
           NavigationDestination(
@@ -177,10 +177,10 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             UserAccountsDrawerHeader(
               margin: EdgeInsets.zero,
-              decoration: const BoxDecoration(color: appAccent),
+              decoration: const BoxDecoration(color: appPrimary),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
-                foregroundColor: appAccent,
+                foregroundColor: appPrimary,
                 child: Text(
                   displayName[0].toUpperCase(),
                   style: const TextStyle(
@@ -199,7 +199,7 @@ class _DashboardPageState extends State<DashboardPage> {
               leading: const Icon(Icons.home_outlined),
               title: const Text('Dashboard'),
               selected: true,
-              selectedColor: appAccent,
+              selectedColor: appPrimary,
               onTap: () {
                 Navigator.of(context).pop();
                 setState(() => _selectedIndex = 0);
