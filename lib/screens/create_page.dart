@@ -8,10 +8,10 @@ class CreateTaskPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create Task'),
+        title: const Text('Create Task'),
         centerTitle: true,
       ),
-      body: createTaskForm(),
+      body: const createTaskForm(),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'screens/profile_page.dart';
 import 'screens/signIn_page.dart';
+import 'screens/taskStatistic_page.dart';
 import 'theme/app_theme.dart';
 
 const appBackground = Color(0xFFFBFBFE);
@@ -22,6 +24,10 @@ class SlaTaskTrackerApp extends StatelessWidget {
       title: 'SLA Task Tracker',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
+      routes: {
+        ProfilePage.routeName: (_) => const ProfilePage(),
+        TaskStatisticPage.routeName: (_) => const TaskStatisticPage(),
+      },
       home: const SignInPage(),
     );
   }
