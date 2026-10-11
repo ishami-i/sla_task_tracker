@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
+import '../logic/sla_calculator.dart';
+import '../models/sla_status.dart';
+import '../models/task.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../services/user_queries.dart';
 import '../utils/profile_validator.dart';
+import 'profile_page.dart';
+
+class _TeamData {
+  final List<User> users;
+  final List<Task> tasks;
+  _TeamData(this.users, this.tasks);
+}
 
 class TeamMemberPage extends StatefulWidget {
   const TeamMemberPage({super.key});
@@ -12,7 +22,7 @@ class TeamMemberPage extends StatefulWidget {
 }
 
 class _TeamMemberPageState extends State<TeamMemberPage> {
-  late Future<List<User>> _future;
+  late Future<_TeamData> _future;
 
   static const _colors = [
     Colors.blue, Colors.green, Colors.purple, Colors.teal, Colors.orange,
@@ -21,13 +31,40 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
   @override
   void initState() {
     super.initState();
-    _future = DatabaseHelper.instance.getUsers();
+    _future = _loadTeam();
+  }
+
+  Future<_TeamData> _loadTeam() async {
+    final db = DatabaseHelper.instance;
+    final users = await db.getUsers();
+    final tasks = await db.getTasks();
+    return _TeamData(users, tasks);
   }
 
   void _reload() =>
       setState(() {
-        _future = DatabaseHelper.instance.getUsers();
+        _future = _loadTeam();
       });
+
+  String _workload(User m, List<Task> tasks) {
+    final now = DateTime.now();
+    final mine = tasks.where((t) => t.assignedTo == m.id);
+    final open = mine.where((t) => !isTaskDone(t.status)).length;
+    final overdue = mine
+        .where((t) => calculateSlaStatus(t, now: now) == SlaStatus.overdue)
+        .length;
+    if (open == 0) return '${m.role} · no open tasks';
+    final overdueText = overdue > 0 ? ' · $overdue overdue' : '';
+    return '${m.role} · $open open$overdueText';
+  }
+
+  Future<void> _openMember(User m) async {
+    if (m.id == null) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => ProfilePage(viewUserId: m.id)),
+    );
+    if (mounted) _reload();
+  }
 
   String _initials(String name) {
     final p = name.trim().split(RegExp(r'\s+'));
@@ -133,7 +170,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<User>>(
+      body: FutureBuilder<_TeamData>(
         future: _future,
         builder: (context, snap) {
           if (snap.connectionState != ConnectionState.done) {
@@ -142,7 +179,8 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
           if (snap.hasError) {
             return Center(child: Text('Could not load members: ${snap.error}'));
           }
-          final members = snap.data ?? [];
+          final members = snap.data?.users ?? [];
+          final tasks = snap.data?.tasks ?? [];
           if (members.isEmpty) {
             return const Center(child: Text('No team members yet. Tap + to add one.'));
           }
@@ -159,7 +197,8 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
                 ),
                 title: Text(m.name,
                     style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text(m.role),
+                subtitle: Text(_workload(m, tasks)),
+                onTap: () => _openMember(m),
                 trailing: PopupMenuButton<String>(
                   onSelected: (v) {
                     if (v == 'edit') _showMemberDialog(existing: m);
