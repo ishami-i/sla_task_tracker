@@ -23,8 +23,11 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
     _future = DatabaseHelper.instance.getUsers();
   }
 
-  void _reload() =>
-      setState(() => _future = DatabaseHelper.instance.getUsers());
+  void _reload() {
+    setState(() {
+      _future = DatabaseHelper.instance.getUsers();
+    });
+  }
 
   String _initials(String name) {
     final p = name.trim().split(RegExp(r'\s+'));
@@ -80,7 +83,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
                   ));
                 }
                 if (ctx.mounted) Navigator.pop(ctx);
-                _reload();
+                if (mounted) _reload();
               } catch (e) {
                 if (ctx.mounted) {
                   ScaffoldMessenger.of(ctx).showSnackBar(
@@ -108,7 +111,7 @@ class _TeamMemberPageState extends State<TeamMemberPage> {
             onPressed: () async {
               if (u.id != null) await DatabaseHelper.instance.deleteUser(u.id!);
               if (ctx.mounted) Navigator.pop(ctx);
-              _reload();
+              if (mounted) _reload();
             },
             child: const Text('Remove', style: TextStyle(color: Colors.red)),
           ),
