@@ -6,10 +6,7 @@ import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../widgets/sla_chip.dart';
 import 'create_page.dart';
-import 'profile_page.dart';
 import 'taskDetail_page.dart';
-import 'taskStatistic_page.dart';
-import 'teamMember_page.dart';
 
 class _TaskData {
   final List<Task> tasks;
@@ -52,8 +49,6 @@ class _TaskListPageState extends State<TaskListPage> {
   }
 
   DateTime? _due(Task t) => DateTime.tryParse(t.deadline);
-
-  bool _isDone(Task t) => t.status.toLowerCase().contains('complet');
 
   SlaStatus _sla(Task t) => calculateSlaStatus(t, now: DateTime.now());
 

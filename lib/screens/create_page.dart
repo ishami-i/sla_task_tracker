@@ -6,8 +6,8 @@ class CreateTaskPage extends StatelessWidget {
   const CreateTaskPage({super.key});
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: const createTaskForm(),
+    return const Scaffold(
+      body: createTaskForm(),
     );
   }
 }
