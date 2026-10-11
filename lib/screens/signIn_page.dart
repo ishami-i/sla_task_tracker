@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../services/user_session.dart';
 import 'dashboard_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -28,13 +29,23 @@ class _SignInPageState extends State<SignInPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSigningIn = true);
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+    final userName = _emailController.text.trim().split('@').first;
+
+    try {
+      await UserSession.signIn(userName);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSigningIn = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not sign in: $e')),
+      );
+      return;
+    }
+
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => DashboardPage(
-          userName: _emailController.text.trim().split('@').first,
-        ),
+        builder: (_) => DashboardPage(userName: userName),
       ),
     );
   }
@@ -61,7 +72,7 @@ class _SignInPageState extends State<SignInPage> {
                     Container(
                       height: 150,
                       decoration: BoxDecoration(
-                        color: appSecondary.withOpacity(0.65),
+                        color: appSecondary.withValues(alpha: 0.65),
                         borderRadius: BorderRadius.circular(32),
                       ),
                       child: const Icon(
@@ -86,7 +97,7 @@ class _SignInPageState extends State<SignInPage> {
                       'Plan. Track. Deliver Together.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: appText.withOpacity(0.62),
+                        color: appText.withValues(alpha: 0.62),
                         fontSize: 16,
                       ),
                     ),
@@ -163,7 +174,7 @@ class _SignInPageState extends State<SignInPage> {
                         Text(
                           "Don't have an account? ",
                           style:
-                              TextStyle(color: appText.withOpacity(0.65)),
+                              TextStyle(color: appText.withValues(alpha: 0.65)),
                         ),
                         TextButton(
                           onPressed: () => ScaffoldMessenger.of(context)

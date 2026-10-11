@@ -15,18 +15,20 @@ class UserSession {
 
   static Future<void> clear() => _prefs.remove(_kCurrentUserId);
 
+  static Future<User> signIn(String rawName) => _findOrCreateByName(rawName);
+
   static Future<User> loadCurrentUser({String? preferredName}) async {
     final db = DatabaseHelper.instance;
-
-    final name = preferredName?.trim() ?? '';
-    if (name.isNotEmpty) {
-      return _findOrCreateByName(name);
-    }
 
     final id = await getCurrentUserId();
     if (id != null) {
       final user = await db.getUserById(id);
       if (user != null) return user;
+    }
+
+    final name = preferredName?.trim() ?? '';
+    if (name.isNotEmpty) {
+      return _findOrCreateByName(name);
     }
 
     final users = await db.getUsers();
@@ -38,21 +40,31 @@ class UserSession {
     return _findOrCreateByName('Aline Uwase', role: 'Project Lead');
   }
 
+  static String displayNameFrom(String raw) {
+    final words = raw
+        .trim()
+        .split(RegExp(r'[\s._-]+'))
+        .where((w) => w.isNotEmpty)
+        .map((w) => w[0].toUpperCase() + w.substring(1).toLowerCase());
+    final name = words.join(' ');
+    return name.isEmpty ? 'User' : name;
+  }
+
   static Future<User> _findOrCreateByName(
-    String name, {
+    String rawName, {
     String role = 'Project team member',
   }) async {
     final db = DatabaseHelper.instance;
+    final displayName = displayNameFrom(rawName);
 
     final users = await db.getUsers();
     for (final user in users) {
-      if (user.name.toLowerCase() == name.toLowerCase()) {
+      if (user.name.toLowerCase() == displayName.toLowerCase()) {
         await setCurrentUserId(user.id!);
         return user;
       }
     }
 
-    final displayName = name[0].toUpperCase() + name.substring(1);
     final newId = await db.insertUser(User(name: displayName, role: role));
     await setCurrentUserId(newId);
     return User(id: newId, name: displayName, role: role);
