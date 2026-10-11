@@ -3,6 +3,7 @@ import '../models/task.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
 import '../widgets/sla_chip.dart';
+import 'create_page.dart';
 import 'profile_page.dart';
 import 'taskStatistic_page.dart';
 import 'teamMember_page.dart';
@@ -44,6 +45,12 @@ class _TaskListPageState extends State<TaskListPage> {
     return _TaskData(tasks, {
       for (final u in users)
         if (u.id != null) u.id!: u,
+    });
+  }
+
+  void _reload() {
+    setState(() {
+      _future = _load();
     });
   }
 
@@ -98,6 +105,13 @@ class _TaskListPageState extends State<TaskListPage> {
         ),
       );
 
+  Future<void> _openCreateTask() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => const CreateTaskPage()),
+    );
+    if (mounted) _reload();
+  }
+
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -108,6 +122,7 @@ class _TaskListPageState extends State<TaskListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text(
           'Tasks',
           style: TextStyle(fontWeight: FontWeight.w700),
@@ -155,7 +170,7 @@ class _TaskListPageState extends State<TaskListPage> {
                 if (tasks.isEmpty) return const Center(child: Text('No tasks found'));
                 return RefreshIndicator(
                   onRefresh: () async {
-                    setState(() => _future = _load());
+                    _reload();
                     await _future;
                   },
                   child: ListView.builder(
@@ -168,7 +183,7 @@ class _TaskListPageState extends State<TaskListPage> {
                         margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(
                           onTap: () {
-                            // TODO: navigate to taskDetail_page
+                            // TODO: navigate to taskDetail_page, then call _reload()
                           },
                           leading: CircleAvatar(
                             child: Text(assignee == null ? '?' : _initials(assignee.name)),
@@ -190,10 +205,7 @@ class _TaskListPageState extends State<TaskListPage> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // TODO: navigate to create_page, then reload:
-          // setState(() => _future = _load());
-        },
+        onPressed: _openCreateTask,
         child: const Icon(Icons.add),
       ),
       bottomNavigationBar: NavigationBar(
