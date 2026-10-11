@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'screens/profile_page.dart';
 import 'screens/signIn_page.dart';
-import 'screens/taskStatistic_page.dart';
+import 'services/settings_storage.dart';
 import 'theme/app_theme.dart';
 
 const appBackground = Color(0xFFFBFBFE);
@@ -11,7 +10,9 @@ const appPrimary = Color(0xFF064200);
 const appSecondary = Color(0xFFDDDBFF);
 const appAccent = Color(0xFF443DFF);
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SettingsStorage.loadSlaSettings();
   runApp(const SlaTaskTrackerApp());
 }
 
@@ -24,16 +25,12 @@ class SlaTaskTrackerApp extends StatelessWidget {
       title: 'SLA Task Tracker',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      routes: {
-        ProfilePage.routeName: (_) => const ProfilePage(),
-        TaskStatisticPage.routeName: (_) => const TaskStatisticPage(),
-      },
       home: const SignInPage(),
     );
   }
 }
 
-// Kept as an alias for existing tests and callers of the starter app.
+// Will be used to run tests and callers
 class MyApp extends SlaTaskTrackerApp {
   const MyApp({super.key});
 }

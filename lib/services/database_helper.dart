@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 import '../models/user.dart';
 import '../models/task.dart';
 
@@ -16,7 +18,25 @@ class DatabaseHelper {
     return _database!;
   }
 
+  static bool _factoryInitialized = false;
+
+  static void _initFactory() {
+    if (_factoryInitialized) return;
+    if (kIsWeb) {
+      databaseFactory = databaseFactoryFfiWeb;
+      _factoryInitialized = true;
+    } else if (defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.linux) {
+      sqfliteFfiInit();
+      databaseFactory = databaseFactoryFfi;
+      _factoryInitialized = true;
+    }
+  }
+
   Future<Database> _initDatabase() async {
+    _initFactory();
+
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'management_database.db');
 
@@ -74,6 +94,30 @@ class DatabaseHelper {
   Future<int> insertTask(Task task) async {
     final db = await database;
     return await db.insert('tasks', task.toMap());
+  }
+
+  Future<int> updateTask(Task task) async {
+    if (task.id == null) {
+      throw ArgumentError('Cannot update a task without an id');
+    }
+    final db = await database;
+    return await db.update(
+      'tasks',
+      task.toMap(),
+      where: 'id = ?',
+      whereArgs: [task.id],
+    );
+  }
+
+  Future<Task?> getTaskById(int id) async {
+    final db = await database;
+    final result = await db.query(
+      'tasks',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    return result.isEmpty ? null : Task.fromMap(result.first);
   }
 
   Future<List<Task>> getTasks() async {

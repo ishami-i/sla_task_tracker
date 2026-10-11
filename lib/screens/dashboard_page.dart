@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../logic/sla_calculator.dart';
 import '../main.dart';
+import '../models/sla_status.dart';
 import '../models/task.dart';
 import '../services/database_helper.dart';
 import '../services/user_session.dart';
@@ -8,6 +10,7 @@ import 'profile_page.dart';
 import 'signIn_page.dart';
 import 'taskList_page.dart';
 import 'taskStatistic_page.dart';
+import 'teamMember_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key, required this.userName});
@@ -20,7 +23,6 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  int _selectedIndex = 0;
   List<Task> _tasks = const [];
   bool _isLoading = true;
 
@@ -48,8 +50,8 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  int _count(String status) =>
-      _tasks.where((task) => task.slaStatus.toLowerCase() == status).length;
+  int _count(SlaStatus status) =>
+      _tasks.where((task) => calculateSlaStatus(task, now: DateTime.now()) == status).length;
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +110,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              "Here's what's happening with yourproject.",
+              "Here's what's happening with your project.",
               style: TextStyle(
                 color: appText.withValues(alpha: 0.65),
                 fontSize: 16,
@@ -129,37 +131,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ],
         ),
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              setState(() => _selectedIndex = 0);
-            case 1:
-              _openTasks();
-            case 2:
-              _showComingSoon('Team');
-            case 3:
-              _openStatistics();
-            case 4:
-              _openProfile();
-          }
-        },
-        destinations: const [
-          NavigationDestination(
-              icon: Icon(Icons.home_outlined),
-              selectedIcon: Icon(Icons.home),
-              label: 'Home'),
-          NavigationDestination(
-              icon: Icon(Icons.check_box_outlined), label: 'Tasks'),
-          NavigationDestination(
-              icon: Icon(Icons.groups_outlined), label: 'Team'),
-          NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined), label: 'Stats'),
-          NavigationDestination(
-              icon: Icon(Icons.person_outline), label: 'Profile'),
-        ],
       ),
     );
   }
@@ -202,7 +173,7 @@ class _DashboardPageState extends State<DashboardPage> {
               selectedColor: appPrimary,
               onTap: () {
                 Navigator.of(context).pop();
-                setState(() => _selectedIndex = 0);
+                _loadTasks();
               },
             ),
             ListTile(
@@ -218,7 +189,7 @@ class _DashboardPageState extends State<DashboardPage> {
               title: const Text('Team'),
               onTap: () {
                 Navigator.of(context).pop();
-                _showComingSoon('Team');
+                _openTeam();
               },
             ),
             ListTile(
@@ -250,10 +221,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  void _showComingSoon(String section) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$section is being built by the team.')),
+  Future<void> _openTeam() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const TeamMemberPage(),
+      ),
     );
+    if (mounted) _loadTasks();
   }
 
   Future<void> _openStatistics() async {
@@ -327,19 +301,19 @@ class _DashboardPageState extends State<DashboardPage> {
                 onTap: _openTasks),
             _StatCard(
                 label: 'On Track',
-                value: '${_count('on track')}',
+                value: '${_count(SlaStatus.onTrack)}',
                 icon: Icons.check_circle_outline,
                 color: const Color(0xFF16885B),
                 onTap: _openTasks),
             _StatCard(
                 label: 'At Risk',
-                value: '${_count('at risk')}',
+                value: '${_count(SlaStatus.atRisk)}',
                 icon: Icons.warning_amber_rounded,
                 color: const Color(0xFFE6A51F),
                 onTap: _openTasks),
             _StatCard(
                 label: 'Overdue',
-                value: '${_count('overdue')}',
+                value: '${_count(SlaStatus.overdue)}',
                 icon: Icons.error_outline,
                 color: const Color(0xFFD84949),
                 onTap: _openTasks),
@@ -349,16 +323,17 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  void _openTasks() {
-    Navigator.of(context).push(
+  Future<void> _openTasks() async {
+    await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => TaskListPage(userName: widget.userName),
       ),
     );
+    if (mounted) _loadTasks();
   }
 
   Widget _buildTaskOverview() {
-    final completed = _count('completed');
+    final completed = _count(SlaStatus.completed);
     return _DashboardCard(
       title: 'Task Overview',
       child: _tasks.isEmpty
@@ -390,11 +365,11 @@ class _DashboardPageState extends State<DashboardPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _LegendRow('On Track', _count('on track'),
+                      _LegendRow('On Track', _count(SlaStatus.onTrack),
                           const Color(0xFF16885B)),
-                      _LegendRow('At Risk', _count('at risk'),
+                      _LegendRow('At Risk', _count(SlaStatus.atRisk),
                           const Color(0xFFE6A51F)),
-                      _LegendRow('Overdue', _count('overdue'),
+                      _LegendRow('Overdue', _count(SlaStatus.overdue),
                           const Color(0xFFD84949)),
                       _LegendRow('Completed', completed, Colors.blueGrey),
                     ],
@@ -415,6 +390,7 @@ class _DashboardPageState extends State<DashboardPage> {
             )
           : Column(
               children: _tasks.take(3).map((task) {
+                final sla = calculateSlaStatus(task, now: DateTime.now());
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const CircleAvatar(
@@ -423,7 +399,7 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                   title: Text(task.title,
                       maxLines: 1, overflow: TextOverflow.ellipsis),
-                  subtitle: Text('${task.slaStatus} • ${task.deadline}'),
+                  subtitle: Text('${sla.label} • ${task.deadline}'),
                 );
               }).toList(),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../services/user_session.dart';
 import 'dashboard_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -28,13 +29,23 @@ class _SignInPageState extends State<SignInPage> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
     setState(() => _isSigningIn = true);
-    await Future<void>.delayed(const Duration(milliseconds: 350));
+    final userName = _emailController.text.trim().split('@').first;
+
+    try {
+      await UserSession.signIn(userName);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isSigningIn = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not sign in: $e')),
+      );
+      return;
+    }
+
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => DashboardPage(
-          userName: _emailController.text.trim().split('@').first,
-        ),
+        builder: (_) => DashboardPage(userName: userName),
       ),
     );
   }

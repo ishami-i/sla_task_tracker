@@ -7,11 +7,13 @@ import '../models/sla_status.dart';
 import '../models/task.dart';
 import '../services/database_helper.dart';
 import '../services/settings_storage.dart';
+import '../services/user_session.dart';
 import '../utils/app_colors.dart';
 import '../widgets/deadline_tile.dart';
 import '../widgets/error_view.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/status_bar_chart.dart';
+import 'taskDetail_page.dart';
 
 class TaskStatisticPage extends StatefulWidget {
   static const routeName = '/statistics';
@@ -68,7 +70,13 @@ class _TaskStatisticPageState extends State<TaskStatisticPage> {
   Future<void> _addSampleTasks() async {
     setState(() => _addingSamples = true);
     try {
-      for (final task in buildSampleTasks(DateTime.now())) {
+      final users = await DatabaseHelper.instance.getUsers();
+      final ids = users.map((u) => u.id).whereType<int>().toList();
+      if (ids.isEmpty) {
+        final me = await UserSession.loadCurrentUser();
+        if (me.id != null) ids.add(me.id!);
+      }
+      for (final task in buildSampleTasks(DateTime.now(), assigneeIds: ids)) {
         await DatabaseHelper.instance.insertTask(task);
       }
       await _load();
@@ -82,6 +90,13 @@ class _TaskStatisticPageState extends State<TaskStatisticPage> {
     } finally {
       if (mounted) setState(() => _addingSamples = false);
     }
+  }
+
+  Future<void> _openTask(Task task) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => TaskDetailPage(task: task)),
+    );
+    if (mounted) _load();
   }
 
   SlaStatus _slaOf(Task task) {
@@ -245,6 +260,7 @@ class _TaskStatisticPageState extends State<TaskStatisticPage> {
                       deadline: upcoming[i].deadline,
                       sla: _slaOf(upcoming[i].task),
                       now: _now,
+                      onTap: () => _openTask(upcoming[i].task),
                     ),
                   ),
                   if (i < upcoming.length - 1)
