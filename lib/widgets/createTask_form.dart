@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../logic/sla_calculator.dart';
 import '../models/task.dart';
 import '../models/user.dart';
 import '../services/database_helper.dart';
@@ -61,20 +62,6 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
     super.dispose();
   }
 
-  String _calculateSlaStatus(DateTime? deadlineDate) {
-    if (deadlineDate == null) return 'On Time';
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final deadlineDay = DateTime(deadlineDate.year, deadlineDate.month, deadlineDate.day);
-
-    if (deadlineDay.isBefore(today)) {
-      return 'Overdue';
-    } else if (deadlineDay.difference(today).inDays <= 1) {
-      return 'At Risk';
-    }
-    return 'On Time';
-  }
-
   Future<void> _selectDeadlineDate(BuildContext context) async {
     FocusScope.of(context).unfocus();
 
@@ -103,7 +90,12 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
     });
 
     try {
-      final slaStatus = _calculateSlaStatus(_selectedDeadlineDate);
+      final slaStatus = calculateSla(
+        status: _selectedStatus!,
+        priority: _selectedPriority!,
+        deadline: _deadlineController.text.trim(),
+        now: DateTime.now(),
+      ).label;
 
       final taskToSave = Task(
         id: widget.task?.id,
@@ -233,7 +225,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
                   );
                 } else {
                   return DropdownButtonFormField<int>(
-                    value: _selectedUserId,
+                    initialValue: _selectedUserId,
                     decoration: const InputDecoration(
                       labelText: 'Assigned To',
                       hintText: 'Select User',
@@ -277,7 +269,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Priority Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedPriority,
+              initialValue: _selectedPriority,
               decoration: const InputDecoration(
                 labelText: 'Priority',
                 hintText: 'Select Priority',
@@ -302,7 +294,7 @@ class _CreateTaskFormState extends State<CreateTaskForm> {
 
             // Status Dropdown
             DropdownButtonFormField<String>(
-              value: _selectedStatus,
+              initialValue: _selectedStatus,
               decoration: const InputDecoration(
                 labelText: 'Status',
                 hintText: 'Select Status',

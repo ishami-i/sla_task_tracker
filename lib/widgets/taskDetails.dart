@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import '../logic/sla_calculator.dart';
 import '../models/task.dart';
 import '../screens/taskStatistic_page.dart';
 import '../services/database_helper.dart';
 import '../utils/app_colors.dart';
 import 'createTask_form.dart';
+import 'sla_chip.dart';
 
 class TaskDetails extends StatefulWidget {
   final Task task;
@@ -19,11 +21,27 @@ class TaskDetails extends StatefulWidget {
 
 class _TaskDetailsState extends State<TaskDetails> {
   late Task _currentTask;
+  String? _assigneeName;
 
   @override
   void initState() {
     super.initState();
     _currentTask = widget.task;
+    _loadAssignee();
+  }
+
+  Future<void> _loadAssignee() async {
+    final id = _currentTask.assignedTo;
+    if (id == null) {
+      if (_assigneeName != null) setState(() => _assigneeName = null);
+      return;
+    }
+    try {
+      final user = await DatabaseHelper.instance.getUserById(id);
+      if (mounted) setState(() => _assigneeName = user?.name);
+    } catch (e) {
+      debugPrint('Could not load assignee: $e');
+    }
   }
 
   Future<void> _navigateToEdit() async {
@@ -42,6 +60,7 @@ class _TaskDetailsState extends State<TaskDetails> {
           setState(() {
             _currentTask = updated;
           });
+          _loadAssignee();
         }
       }
     }
@@ -147,16 +166,20 @@ class _TaskDetailsState extends State<TaskDetails> {
                     _buildDetailRow(
                       icon: Icons.access_time,
                       label: 'SLA Status',
-                      value: _currentTask.slaStatus,
-                      valueColor: AppColors.accent,
+                      trailing: SlaChip(
+                        status: calculateSlaStatus(
+                          _currentTask,
+                          now: DateTime.now(),
+                        ),
+                      ),
                     ),
                     const Divider(color: AppColors.secondary),
                     _buildDetailRow(
                       icon: Icons.person,
-                      label: 'Assigned User ID',
-                      value: _currentTask.assignedTo != null
-                          ? '${_currentTask.assignedTo}'
-                          : 'Not assigned',
+                      label: 'Assigned To',
+                      value: _currentTask.assignedTo == null
+                          ? 'Not assigned'
+                          : (_assigneeName ?? 'Loading…'),
                     ),
                   ],
                 ),
@@ -220,8 +243,9 @@ class _TaskDetailsState extends State<TaskDetails> {
   Widget _buildDetailRow({
     required IconData icon,
     required String label,
-    required String value,
+    String value = '',
     Color? valueColor,
+    Widget? trailing,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -237,13 +261,14 @@ class _TaskDetailsState extends State<TaskDetails> {
             ),
           ),
           const Spacer(),
-          Text(
-            value,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: valueColor ?? AppColors.text,
-            ),
-          ),
+          trailing ??
+              Text(
+                value,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: valueColor ?? AppColors.text,
+                ),
+              ),
         ],
       ),
     );

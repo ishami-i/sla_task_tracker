@@ -2,8 +2,21 @@ import '../logic/sla_calculator.dart';
 import '../models/task.dart';
 import '../utils/date_format.dart';
 
-List<Task> buildSampleTasks(DateTime now) {
-  Task task(String title, String priority, Duration dueIn, String status) {
+List<Task> buildSampleTasks(DateTime now, {List<int> assigneeIds = const []}) {
+  var next = 0;
+
+  int? nextAssignee() {
+    if (assigneeIds.isEmpty) return null;
+    return assigneeIds[next++ % assigneeIds.length];
+  }
+
+  Task task(
+    String title,
+    String description,
+    String priority,
+    Duration dueIn,
+    String status,
+  ) {
     final deadline = formatDeadlineForStorage(now.add(dueIn));
     final sla = calculateSla(
       status: status,
@@ -13,6 +26,8 @@ List<Task> buildSampleTasks(DateTime now) {
     );
     return Task(
       title: title,
+      description: description,
+      assignedTo: nextAssignee(),
       priority: priority,
       deadline: deadline,
       status: status,
@@ -21,17 +36,17 @@ List<Task> buildSampleTasks(DateTime now) {
   }
 
   return [
-    task('Implement Local Storage', 'Medium', const Duration(hours: 30), 'In Progress'),
-    task('Payment confirmation screen', 'High', const Duration(hours: 60), 'To Do'),
-    task('API docs for transfers', 'Medium', const Duration(hours: 20), 'In Progress'),
-    task('Fix login token refresh', 'High', const Duration(days: -2), 'In Progress'),
-    task('KYC upload test cases', 'Medium', const Duration(days: -1), 'To Do'),
-    task('Splash screen animation', 'Low', const Duration(days: -4), 'Done'),
-    task('Set up project repository', 'Medium', const Duration(days: -6), 'Done'),
-    task('Test Application', 'Medium', const Duration(days: 5), 'To Do'),
-    task('Prepare Demo', 'High', const Duration(days: 8), 'To Do'),
-    task('Onboarding illustrations', 'Low', const Duration(days: 7), 'In Progress'),
-    task('Rate-limit transfer endpoint', 'Low', const Duration(hours: 60), 'To Do'),
-    task('Write technical report', 'Medium', const Duration(days: 10), 'To Do'),
+    task('Implement Local Storage', 'Save tasks and users with SQLite.', 'Medium', const Duration(hours: 30), 'In Progress'),
+    task('Payment confirmation screen', 'Screen shown after a transfer succeeds.', 'High', const Duration(hours: 60), 'To-do'),
+    task('API docs for transfers', 'Document the transfer endpoints.', 'Medium', const Duration(hours: 20), 'In Progress'),
+    task('Fix login token refresh', 'Users are logged out after one hour.', 'High', const Duration(days: -2), 'In Progress'),
+    task('KYC upload test cases', 'Write test cases for document upload.', 'Medium', const Duration(days: -1), 'To-do'),
+    task('Splash screen animation', 'Animate the logo on app start.', 'Low', const Duration(days: -4), 'Completed'),
+    task('Set up project repository', 'Create the repo and branches.', 'Medium', const Duration(days: -6), 'Completed'),
+    task('Test Application', 'Run the full app on an emulator.', 'Medium', const Duration(days: 5), 'To-do'),
+    task('Prepare Demo', 'Plan the 10-15 minute demo video.', 'High', const Duration(days: 8), 'To-do'),
+    task('Onboarding illustrations', 'Draw three onboarding images.', 'Low', const Duration(days: 7), 'In Progress'),
+    task('Rate-limit transfer endpoint', 'Limit repeated transfer requests.', 'Low', const Duration(hours: 60), 'To-do'),
+    task('Write technical report', 'Challenges and solutions, 2-4 pages.', 'Medium', const Duration(days: 10), 'To-do'),
   ];
 }

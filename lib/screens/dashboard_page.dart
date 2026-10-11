@@ -112,7 +112,7 @@ class _DashboardPageState extends State<DashboardPage> {
             Text(
               "Here's what's happening with your project.",
               style: TextStyle(
-                color: appText.withOpacity(0.65),
+                color: appText.withValues(alpha: 0.65),
                 fontSize: 16,
               ),
             ),
@@ -426,7 +426,7 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -452,7 +452,7 @@ class _StatCard extends StatelessWidget {
                     Text(
                       label,
                       style: TextStyle(
-                        color: appText.withOpacity(0.7),
+                        color: appText.withValues(alpha: 0.7),
                         fontSize: 12,
                       ),
                     ),
@@ -530,7 +530,7 @@ class _EmptyState extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
             child: Text(message,
-                style: TextStyle(color: appText.withOpacity(0.68)))),
+                style: TextStyle(color: appText.withValues(alpha: 0.68)))),
       ],
     );
   }
