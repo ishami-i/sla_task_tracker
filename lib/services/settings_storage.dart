@@ -9,18 +9,22 @@ class SettingsStorage {
   static const _kAtRiskHours = 'sla_at_risk_hours';
   static const _kHighPriorityBoost = 'sla_high_priority_boost';
 
+  static SlaSettings current = const SlaSettings();
+
   static Future<SlaSettings> loadSlaSettings() async {
     const defaults = SlaSettings();
     try {
       final hours = await _prefs.getInt(_kAtRiskHours);
       final boost = await _prefs.getBool(_kHighPriorityBoost);
-      return SlaSettings(
+      current = SlaSettings(
         atRiskHours: (hours ?? defaults.atRiskHours)
             .clamp(minAtRiskHours, maxAtRiskHours),
         highPriorityBoost: boost ?? defaults.highPriorityBoost,
       );
+      return current;
     } catch (e) {
       debugPrint('loadSlaSettings failed: $e');
+      current = defaults;
       return defaults;
     }
   }
@@ -29,6 +33,7 @@ class SettingsStorage {
     try {
       await _prefs.setInt(_kAtRiskHours, settings.atRiskHours);
       await _prefs.setBool(_kHighPriorityBoost, settings.highPriorityBoost);
+      current = settings;
       return true;
     } catch (e) {
       debugPrint('saveSlaSettings failed: $e');
@@ -40,6 +45,7 @@ class SettingsStorage {
     try {
       await _prefs.remove(_kAtRiskHours);
       await _prefs.remove(_kHighPriorityBoost);
+      current = const SlaSettings();
       return true;
     } catch (e) {
       debugPrint('resetSlaSettings failed: $e');

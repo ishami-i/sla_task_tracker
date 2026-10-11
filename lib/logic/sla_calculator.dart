@@ -1,6 +1,7 @@
 import '../models/sla_rule.dart';
 import '../models/sla_status.dart';
 import '../models/task.dart';
+import '../services/settings_storage.dart';
 
 const Set<String> _doneStatuses = {'done', 'completed', 'complete'};
 
@@ -42,8 +43,8 @@ SlaStatus calculateSla({
   required String priority,
   required String deadline,
   required DateTime now,
-  int atRiskHours = 48,
-  bool highPriorityBoost = true,
+  int? atRiskHours,
+  bool? highPriorityBoost,
 }) {
   if (isTaskDone(status)) return SlaStatus.completed;
 
@@ -52,11 +53,12 @@ SlaStatus calculateSla({
 
   if (!due.isAfter(now)) return SlaStatus.overdue;
 
-  final extraHours =
-      highPriorityBoost && isHighPriority(priority) ? highPriorityExtraHours : 0;
+  final windowHours = atRiskHours ?? SettingsStorage.current.atRiskHours;
+  final boost = highPriorityBoost ?? SettingsStorage.current.highPriorityBoost;
+  final extraHours = boost && isHighPriority(priority) ? highPriorityExtraHours : 0;
   final minutesLeft = due.difference(now).inMinutes;
 
-  if (minutesLeft < (atRiskHours + extraHours) * 60) return SlaStatus.atRisk;
+  if (minutesLeft < (windowHours + extraHours) * 60) return SlaStatus.atRisk;
 
   return SlaStatus.onTrack;
 }
@@ -64,8 +66,8 @@ SlaStatus calculateSla({
 SlaStatus calculateSlaStatus(
   Task task, {
   required DateTime now,
-  int atRiskHours = 48,
-  bool highPriorityBoost = true,
+  int? atRiskHours,
+  bool? highPriorityBoost,
 }) {
   return calculateSla(
     status: task.status,
