@@ -4,37 +4,37 @@
 
 ---
 
-## 🌟 Key Features
+##  Key Features
 
-- 📊 **Interactive Dashboard**
+-  **Interactive Dashboard**
   - Real-time task statistics (`Total Tasks`, `On Track`, `At Risk`, `Overdue`).
   - Visual task completion progress charts and recent activity logs.
   - Auto-refreshing metrics upon navigation.
 
-- 📋 **Task Management & Editing**
+-  **Task Management & Editing**
   - Create, view, edit, and search tasks seamlessly.
   - Filter tasks by SLA status (`All`, `On Track`, `At Risk`, `Overdue`, `Completed`).
   - Assign tasks to team members with custom deadlines and priority levels (`Low`, `Medium`, `High`).
 
-- 📈 **SLA Visualization & Analytics**
+-  **SLA Visualization & Analytics**
   - Real-time dynamic SLA deadline calculation (`On Track`, `At Risk`, `Overdue`, `Completed`).
   - Status distribution bar charts and upcoming deadline countdowns.
 
-- 👥 **Team Member Management**
+-  **Team Member Management**
   - Add, edit, and remove team members.
   - Form validation for names and roles to maintain data integrity.
 
-- 🎨 **Modern Design & Custom Palette**
+-  **Modern Design & Custom Palette**
   - Material 3 theme styling with a custom color scheme (`Primary`, `Secondary`, `Accent`, `Background`, `Text`).
   - Responsive layouts supporting Mobile, Desktop, and Web.
 
-- 💾 **Cross-Platform Persistence**
+-  **Cross-Platform Persistence**
   - SQLite local database storage powered by `sqflite`, `sqflite_common_ffi`, and `sqflite_common_ffi_web`.
   - Runs natively on Android, iOS, macOS, Windows, Linux, and Web (Chrome).
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+##  Tech Stack & Architecture
 
 - **Framework**: [Flutter](https://flutter.dev) (Dart SDK `^3.5.4`)
 - **Database**: `sqflite`, `sqflite_common_ffi`, `sqflite_common_ffi_web`
@@ -43,7 +43,7 @@
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 the project structure is based from lib since everything done is in lib/ directory.
 
 ```
@@ -141,7 +141,7 @@ lib/
 
 ---
 
-## 🎨 Color Palette
+##  Color Palette
 
 | Token | RGB Color | Hex | Usage |
 | :--- | :--- | :--- | :--- |
@@ -158,6 +158,6 @@ lib/
 3. [Ishami Irené](https://github.com/ishami-i)
 4. [Jonathan Ishimwe](https://github.com/IshimweJ-Ona)
 
-## 📝 License
+##  License
 
 This project is licensed under the MIT License.
